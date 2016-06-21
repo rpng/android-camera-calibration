@@ -1,0 +1,4 @@
+# Ignore build files
+/build
+/distribution
+*.iml
