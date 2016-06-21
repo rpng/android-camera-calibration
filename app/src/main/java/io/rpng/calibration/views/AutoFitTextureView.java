@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.rpng.calibration;
+package io.rpng.calibration.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

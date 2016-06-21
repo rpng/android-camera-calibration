@@ -23,7 +23,7 @@ model {
             targetSdkVersion.apiLevel 23
         }
         ndk {
-            moduleName = 'opencv'
+            moduleName = 'opencv_310'
             abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64']) //this is default
             ldLibs.addAll(['log'])
         }

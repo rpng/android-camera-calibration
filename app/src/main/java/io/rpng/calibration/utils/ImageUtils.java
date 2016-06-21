@@ -1,4 +1,4 @@
-package io.rpng.calibration;
+package io.rpng.calibration.utils;
 
 import android.graphics.ImageFormat;
 import android.media.Image;
