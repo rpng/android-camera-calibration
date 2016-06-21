@@ -20,8 +20,11 @@ import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
@@ -135,12 +138,23 @@ public class MainActivity extends AppCompatActivity {
             Mat bgrMat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC4);
             Imgproc.cvtColor(mYuvMat, bgrMat, Imgproc.COLOR_YUV2BGR_I420);
 
+            // Convert to rgba
             Mat rgbaMatOut = new Mat();
+            Mat grayFrame = new Mat();
             Imgproc.cvtColor(bgrMat, rgbaMatOut, Imgproc.COLOR_BGR2RGBA, 0);
-            final Bitmap bitmap = Bitmap.createBitmap(bgrMat.cols(), bgrMat.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(rgbaMatOut, bitmap);
+            Imgproc.cvtColor(bgrMat, grayFrame, Imgproc.COLOR_BGR2GRAY, 0);
+
+            // Testing calibration methods
+            Size mPatternSize = new Size(4,3);
+            MatOfPoint2f mCorners = new MatOfPoint2f();
+
+            // Extract the points, and display them
+            boolean mPatternWasFound = Calib3d.findCirclesGrid(grayFrame, mPatternSize, mCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
+            Calib3d.drawChessboardCorners(rgbaMatOut, mPatternSize, mCorners, mPatternWasFound);
 
             // Update image
+            final Bitmap bitmap = Bitmap.createBitmap(bgrMat.cols(), bgrMat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(rgbaMatOut, bitmap);
             MainActivity.camera2View.setImageBitmap(bitmap);
 
             // Make sure we close the image
