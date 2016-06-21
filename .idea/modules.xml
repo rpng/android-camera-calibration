@@ -5,7 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/android-camera-calibration.iml" filepath="$PROJECT_DIR$/android-camera-calibration.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/libraries/jpeg/jpeg.iml" filepath="$PROJECT_DIR$/libraries/jpeg/jpeg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/libraries/opencv/opencv.iml" filepath="$PROJECT_DIR$/libraries/opencv/opencv.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libraries/opencv_310/opencv_310.iml" filepath="$PROJECT_DIR$/libraries/opencv_310/opencv_310.iml" />
       <module fileurl="file://$PROJECT_DIR$/libraries/swapheap/swapheap.iml" filepath="$PROJECT_DIR$/libraries/swapheap/swapheap.iml" />
     </modules>
   </component>

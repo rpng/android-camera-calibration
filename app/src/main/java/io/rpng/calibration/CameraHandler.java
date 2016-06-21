@@ -1,7 +1,9 @@
 package io.rpng.calibration;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -15,8 +17,10 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -25,7 +29,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+
+import io.rpng.calibration.activities.MainActivity;
+import io.rpng.calibration.utils.CameraUtil;
+import io.rpng.calibration.views.AutoFitTextureView;
 
 public class CameraHandler {
 
@@ -51,7 +58,7 @@ public class CameraHandler {
      * Default constructor
      * Sets our activity, and texture view we should be updating
      */
-    CameraHandler(Activity act, AutoFitTextureView txt) {
+    public CameraHandler(Activity act, AutoFitTextureView txt) {
         this.activity = act;
         this.mTextureView = txt;
     }
@@ -122,14 +129,15 @@ public class CameraHandler {
      * Tries to open a {@link CameraDevice}. The result is listened by `mStateCallback`.
      */
     public void openCamera(int width, int height) {
-        //if (!hasPermissionsGranted(VIDEO_PERMISSIONS)) {
-        //    requestVideoPermissions();
+        //if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        //    PermissionManager.requestCameraPermission();
         //    return;
         //}
         //final Activity activity = getActivity();
         //if (null == activity || activity.isFinishing()) {
         //    return;
         //}
+
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             Log.d(TAG, "tryAcquire");

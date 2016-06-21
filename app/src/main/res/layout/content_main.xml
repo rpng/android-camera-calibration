@@ -9,22 +9,30 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="io.rpng.calibration.MainActivity"
+    tools:context=".activities.MainActivity"
     tools:showIn="@layout/app_bar_main"
     android:id="@+id/camera_preview_frame">
 
-    <io.rpng.calibration.AutoFitTextureView
+    <io.rpng.calibration.views.AutoFitTextureView
         android:id="@+id/camera2_texture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
 
+    <!--<ImageView-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:id="@+id/camera2_preview_gray"-->
+        <!--android:layout_gravity="top"-->
+        <!--android:layout_margin="0dp"-->
+        <!--android:contentDescription="Image "-->
+        <!--android:clickable="false" />-->
 
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/camera2_preview"
+        android:id="@+id/camera2_preview_rgb"
         android:layout_gravity="center"
         android:layout_margin="0dp"
         android:contentDescription="Image "
