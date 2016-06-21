@@ -26,7 +26,8 @@ task(distributeLib, type : Copy) {
     // trigger build library
     dependsOn assemble
     into '../distribution/swapheap/'
-    from('src/main/jni/*.h') {
+    from('src/main/jni/') {
+        include '**/*.h'
         into 'include/'
     }
     from('build/outputs/native/release/lib') {

@@ -46,7 +46,7 @@ dependencies {
 //  already given to us before creating application.
 tasks.whenTaskAdded { task ->
     if (task.name.contains('compile')) {
-        task.dependsOn ':swapheap:distributeLib'
-        task.dependsOn ':jpeg:distributeLib'
+        //task.dependsOn ':swapheap:distributeLib'
+        //task.dependsOn ':jpeg:distributeLib'
     }
 }
