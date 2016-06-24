@@ -1,9 +1,8 @@
-package io.rpng.calibration;
+package io.rpng.calibration.managers;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -11,16 +10,13 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -30,14 +26,25 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.rpng.calibration.R;
 import io.rpng.calibration.activities.MainActivity;
+import io.rpng.calibration.dialogs.ErrorDialog;
 import io.rpng.calibration.utils.CameraUtil;
 import io.rpng.calibration.views.AutoFitTextureView;
 
-public class CameraHandler {
+public class CameraManager {
 
-    private static String TAG = "CameraHandler";
+    // Our permissions we need to function
+    private static final String[] VIDEO_PERMISSIONS = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO,
+    };
+
+    private static final String TAG = "CameraManager";
+    private static final String FRAGMENT_DIALOG = "dialog";
     private Activity activity;
+    private PermissionManager permissionManager;
     private AutoFitTextureView mTextureView;
 
     private ImageReader mImageReader;
@@ -58,9 +65,10 @@ public class CameraHandler {
      * Default constructor
      * Sets our activity, and texture view we should be updating
      */
-    public CameraHandler(Activity act, AutoFitTextureView txt) {
+    public CameraManager(Activity act, AutoFitTextureView txt) {
         this.activity = act;
         this.mTextureView = txt;
+        this.permissionManager = new PermissionManager(activity, VIDEO_PERMISSIONS);
     }
 
     /**
@@ -108,39 +116,36 @@ public class CameraHandler {
         @Override
         public void onDisconnected(CameraDevice cameraDevice) {
             //mCameraOpenCloseLock.release();
-            //cameraDevice.close();
-            //mCameraDevice = null;
+            cameraDevice.close();
+            mCameraDevice = null;
         }
 
         @Override
         public void onError(CameraDevice cameraDevice, int error) {
             //mCameraOpenCloseLock.release();
-            //cameraDevice.close();
-            //mCameraDevice = null;
-            //Activity activity = getActivity();
-            //if (null != activity) {
-            //    activity.finish();
-            //}
+            cameraDevice.close();
+            mCameraDevice = null;
         }
 
     };
 
     /**
-     * Tries to open a {@link CameraDevice}. The result is listened by `mStateCallback`.
+     * Tries to open a {@link CameraDevice}.
+     * The result is listened by `mStateCallback`.
+     * We should already have permissions, so just try to open it
      */
     public void openCamera(int width, int height) {
-        //if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-        //    PermissionManager.requestCameraPermission();
-        //    return;
-        //}
-        //final Activity activity = getActivity();
-        //if (null == activity || activity.isFinishing()) {
-        //    return;
-        //}
 
-        CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        // Make sure we have permissions
+        if(permissionManager.handle_permissions())
+            return;
+
+        // Note this is bad naming on my part...
+        // There is an android class with the same name as this class
+        // Thus we import this explicit instead of an import statement
+        android.hardware.camera2.CameraManager manager = (android.hardware.camera2.CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
-            Log.d(TAG, "tryAcquire");
+            //Log.d(TAG, "tryAcquire");
             //if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
             //    throw new RuntimeException("Time out waiting to lock camera opening.");
             //}
@@ -175,7 +180,7 @@ public class CameraHandler {
             activity.finish();
         } catch (NullPointerException e) {
             // Currently an NPE is thrown when the Camera2API is used but not supported on the device this code runs.
-            //ErrorDialog.newInstance(getString(R.string.camera_error)).show(getChildFragmentManager(), FRAGMENT_DIALOG);
+            ErrorDialog.newInstance(activity.getString(R.string.camera_error)).show(activity.getFragmentManager(), FRAGMENT_DIALOG);
         } catch (SecurityException e) {
             e.printStackTrace();
             Toast.makeText(activity, "Cannot access the camera.", Toast.LENGTH_SHORT).show();
@@ -188,7 +193,7 @@ public class CameraHandler {
 
 
     private void startPreview() {
-        if (mCameraDevice == null ||!mTextureView.isAvailable() || mPreviewSize == null) {
+        if (mCameraDevice == null ||!mTextureView.isAvailable() || mPreviewSize == null || mImageReader == null) {
             return;
         }
         try {
@@ -241,6 +246,27 @@ public class CameraHandler {
         }
     }
 
+    public void closeCamera() {
+        //try {
+        //mCameraOpenCloseLock.acquire();
+
+        if (null != mCameraDevice) {
+            mCameraDevice.close();
+            mCameraDevice = null;
+        }
+        if (null != mImageReader) {
+            mImageReader.close();
+            mImageReader = null;
+        }
+
+        //}
+        //catch (InterruptedException e) {
+        //    throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
+        //} finally {
+        //    mCameraOpenCloseLock.release();
+        //}
+    }
+
     /**
      * Starts a background thread and its {@link Handler}.
      */
@@ -254,8 +280,8 @@ public class CameraHandler {
      * Stops the background thread and its {@link Handler}.
      */
     public void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
         try {
+            mBackgroundThread.quitSafely();
             mBackgroundThread.join();
             mBackgroundThread = null;
             mBackgroundHandler = null;

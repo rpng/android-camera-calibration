@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v13.app.FragmentCompat;
 
-import io.rpng.calibration.PermissionManager;
 import io.rpng.calibration.R;
 
 public class ConfirmationDialog extends DialogFragment {

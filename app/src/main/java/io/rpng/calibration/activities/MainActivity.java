@@ -1,14 +1,12 @@
 package io.rpng.calibration.activities;
 
 import android.Manifest;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.audiofx.BassBoost;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,7 +31,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import io.rpng.calibration.CameraHandler;
+import io.rpng.calibration.managers.CameraManager;
 import io.rpng.calibration.R;
 import io.rpng.calibration.utils.ImageUtils;
 import io.rpng.calibration.views.AutoFitTextureView;
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static ImageView camera2View_rgb;
     private static ImageView camera2View_gray;
-    private CameraHandler mCameraHandler;
+    private CameraManager mCameraManager;
     private AutoFitTextureView mTextureView;
 
     @Override
@@ -78,41 +76,34 @@ public class MainActivity extends AppCompatActivity {
         mTextureView = (AutoFitTextureView) findViewById(R.id.camera2_texture);
 
         // Create the camera manager
-        mCameraHandler = new CameraHandler(this, mTextureView);
+        mCameraManager = new CameraManager(this, mTextureView);
 
     }
 
     @Override
     public void onResume() {
-
-
-        // We need to make sure we have permission to access the camera every time we launch into the app
-        // This will cause permission errors on the newer apis, as in the old apis, we assumed we had perms
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                Log.e("testing", "Permission is granted");
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
-                Log.e("testing", "Permission is revoked");
-            }
-        }
-
-
+        // Pass to our super
         super.onResume();
-        if (mTextureView.isAvailable()) {
-            mCameraHandler.openCamera(mTextureView.getWidth(), mTextureView.getHeight());
-        } else {
-            mTextureView.setSurfaceTextureListener(mCameraHandler.mSurfaceTextureListener);
-        }
-
         // Start the background thread
-        mCameraHandler.startBackgroundThread();
+        mCameraManager.startBackgroundThread();
+        // Open the camera
+        // This should take care of the permissions requests
+        if (mTextureView.isAvailable()) {
+            mCameraManager.openCamera(mTextureView.getWidth(), mTextureView.getHeight());
+        } else {
+            mTextureView.setSurfaceTextureListener(mCameraManager.mSurfaceTextureListener);
+        }
     }
 
     @Override
     public void onPause() {
-        //closeCamera();
-        mCameraHandler.stopBackgroundThread();
+        // Stop background thread
+        mCameraManager.stopBackgroundThread();
+        // Close our camera
+        // Note we will get permission errors if we try to reopen
+        // And we have not closed the current active camera
+        mCameraManager.closeCamera();
+        // Call thej super
         super.onPause();
     }
 
@@ -127,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
             // Google: Also, not working as described in android docs (should work the same as acquireNextImage in
             // our case, but it is not)
             // Image im = ir.acquireLatestImage();
-
 
 
             // Get the next image from the queue
@@ -240,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
                 StringBuilder builder = new StringBuilder();
 
-                builder.append("\n Username: " + sharedPrefs.getString("prefUsername", "NULL"));
+                builder.append("\n\n\n Username: " + sharedPrefs.getString("prefUsername", "NULL"));
 
                 builder.append("\n Send report:" + sharedPrefs.getBoolean("prefSendReport", false));
 
