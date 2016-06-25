@@ -36,6 +36,7 @@
     <PreferenceCategory android:title="Calibration Settings" >
 
         <ListPreference
+            android:defaultValue="4x5"
             android:key="prefCalibSize"
             android:title="Checkerboard Size"
             android:summary="Set what grid size to look for"

@@ -63,6 +63,9 @@ public class SettingsActivity extends PreferenceActivity
                 });
             }
 
+            // Current prefs, if this is called mid usage, we would want to use this to get our active settings
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
             // Get our camera id list preference
             ListPreference cameraList = (ListPreference)getPreferenceManager().findPreference("prefCamera");
             ListPreference cameraRez = (ListPreference)getPreferenceManager().findPreference("prefSizeRaw");
@@ -101,12 +104,12 @@ public class SettingsActivity extends PreferenceActivity
                 // Update our settings entry
                 cameraList.setEntries(entries);
                 cameraList.setEntryValues(entriesValues);
-                cameraList.setDefaultValue(entriesValues[0]);
-                cameraList.setValueIndex(0);
+                cameraList.setDefaultValue(entriesValues[0]);;
 
 
                 // Right now we have selected the first camera, so lets populate the resolution list
-                CameraCharacteristics characteristics = manager.getCameraCharacteristics(entriesValues[0].toString());
+                // We should just use the default if there is not a shared setting yet
+                CameraCharacteristics characteristics = manager.getCameraCharacteristics(sharedPreferences.getString("prefCamera", entriesValues[0].toString()));
                 StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] sizes = streamConfigurationMap.getOutputSizes(MediaRecorder.class);
 
@@ -125,7 +128,6 @@ public class SettingsActivity extends PreferenceActivity
                 cameraRez.setEntries(rez);
                 cameraRez.setEntryValues(rezValues);
                 cameraRez.setDefaultValue(rezValues[0]);
-                cameraRez.setValueIndex(0);
 
             } catch (CameraAccessException e) {
                 e.printStackTrace();

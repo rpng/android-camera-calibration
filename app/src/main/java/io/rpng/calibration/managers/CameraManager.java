@@ -3,6 +3,7 @@ package io.rpng.calibration.managers;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -17,6 +18,7 @@ import android.media.ImageReader;
 import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -149,7 +151,8 @@ public class CameraManager {
             //if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
             //    throw new RuntimeException("Time out waiting to lock camera opening.");
             //}
-            String cameraId = manager.getCameraIdList()[0];
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+            String cameraId = sharedPreferences.getString("prefCamera", "0");
 
             // Choose the sizes for camera preview and video recording
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
