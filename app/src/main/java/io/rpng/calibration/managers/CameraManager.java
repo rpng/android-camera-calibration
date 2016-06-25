@@ -168,8 +168,13 @@ public class CameraManager {
                 mTextureView.setAspectRatio(mPreviewSize.getHeight(), mPreviewSize.getWidth());
             }
 
+            // Get image size from prefs
+            String imageSize = sharedPreferences.getString("prefSizeRaw", "640x480");
+            int widthRaw = Integer.parseInt(imageSize.substring(0,imageSize.lastIndexOf("x")));
+            int heightRaw = Integer.parseInt(imageSize.substring(imageSize.lastIndexOf("x")+1));
+
             // Create the image reader which will be called back to, to get image frames
-            mImageReader = ImageReader.newInstance(mVideoSize.getWidth(), mVideoSize.getHeight(), ImageFormat.YUV_420_888, 3);
+            mImageReader = ImageReader.newInstance(widthRaw, heightRaw, ImageFormat.YUV_420_888, 3);
             mImageReader.setOnImageAvailableListener(MainActivity.imageAvailableListener, null);
 
             //configureTransform(width, height);

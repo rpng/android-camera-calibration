@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private CameraManager mCameraManager;
     private AutoFitTextureView mTextureView;
 
+    private static SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -72,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the camera manager
         mCameraManager = new CameraManager(this, mTextureView);
+
+        // Set our shared preferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Lets by default launch into the settings view
         Intent i = new Intent(this, SettingsActivity.class);
@@ -112,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onImageAvailable(ImageReader ir) {
 
+            // Get shared prefs
+
+
             // Contrary to what is written in Aptina presentation acquireLatestImage is not working as described
             // Google: Also, not working as described in android docs (should work the same as acquireNextImage in
             // our case, but it is not)
@@ -121,37 +129,53 @@ public class MainActivity extends AppCompatActivity {
             // Get the next image from the queue
             Image image = ir.acquireNextImage();
 
+            // Convert from yuv to correct format
             Mat mYuvMat = ImageUtils.imageToMat(image);
+            Mat mat_out = new Mat();
 
-            // Convert from yuv
-            Mat bgrMat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC4);
-            Imgproc.cvtColor(mYuvMat, bgrMat, Imgproc.COLOR_YUV2BGR_I420);
+            // See if we should gray scale
+            if(sharedPreferences.getBoolean("preGrayScaled", true)) {
+                Imgproc.cvtColor(mYuvMat, mat_out, Imgproc.COLOR_YUV2GRAY_I420);
+            } else {
+                Imgproc.cvtColor(mYuvMat, mat_out, Imgproc.COLOR_YUV2RGB_I420);
+            }
 
-            // Convert to rgba and gray
-            Mat rgbaMatOut = new Mat();
-            Imgproc.cvtColor(bgrMat, rgbaMatOut, Imgproc.COLOR_BGR2RGBA, 0);
-            Mat grayFrame = new Mat();
-            Imgproc.cvtColor(bgrMat, grayFrame, Imgproc.COLOR_BGR2GRAY, 0);
+            // Get the size of the checkered board we are looking for
+            String prefCalibSize = sharedPreferences.getString("prefCalibSize", "4x5");
+            int widthCalib = Integer.parseInt(prefCalibSize.substring(0,prefCalibSize.lastIndexOf("x")));
+            int heightCalib = Integer.parseInt(prefCalibSize.substring(prefCalibSize.lastIndexOf("x")+1));
 
             // Testing calibration methods
-            Size mPatternSize = new Size(6,10);
+            Size mPatternSize = new Size(widthCalib,heightCalib);
             MatOfPoint2f mCorners = new MatOfPoint2f();
 
-            Mat resizeimage = new Mat();
-            Mat resizeimage2 = new Mat();
-            Size sz = new Size(200,200);
-            Imgproc.resize(grayFrame, resizeimage, sz );
-            Imgproc.resize(rgbaMatOut, resizeimage2, sz );
+            // Get image size from prefs
+            String prefSizeResize = sharedPreferences.getString("prefSizeResize", "0x0");
+            int width = Integer.parseInt(prefSizeResize.substring(0,prefSizeResize.lastIndexOf("x")));
+            int height = Integer.parseInt(prefSizeResize.substring(prefSizeResize.lastIndexOf("x")+1));
+
+            // We we want to resize, do so
+            if(width != 0 && height != 0) {
+
+                // Create matrix for the resized image
+                Mat resizeimage = new Mat();
+                Size sz = new Size(width, height);
+
+                // Resize the images
+                Imgproc.resize(mat_out, resizeimage, sz);
+                mat_out = resizeimage;
+            }
+
 
             // Extract the points, and display them
-            boolean mPatternWasFound = Calib3d.findChessboardCorners(resizeimage, mPatternSize, mCorners, Calib3d.CALIB_CB_FAST_CHECK);
+            boolean mPatternWasFound = Calib3d.findChessboardCorners(mat_out, mPatternSize, mCorners, Calib3d.CALIB_CB_FAST_CHECK);
 
             // If a pattern was found, draw it
-            Calib3d.drawChessboardCorners(resizeimage2, mPatternSize, mCorners, mPatternWasFound);
+            Calib3d.drawChessboardCorners(mat_out, mPatternSize, mCorners, mPatternWasFound);
 
             // Update image
-            final Bitmap bitmap = Bitmap.createBitmap(resizeimage2.cols(), resizeimage2.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(resizeimage2, bitmap);
+            final Bitmap bitmap = Bitmap.createBitmap(mat_out.cols(), mat_out.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mat_out, bitmap);
             MainActivity.camera2View_rgb.setImageBitmap(bitmap);
 
             // Make sure we close the image
