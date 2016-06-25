@@ -50,25 +50,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        // Check to see if opencv is enabled
         if (!OpenCVLoader.initDebug()) {
             Log.e(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), not working.");
         } else {
             Log.d(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), working.");
         }
 
+        // Pass to super
         super.onCreate(savedInstanceState);
+
+        // Create our layout
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         // Get our surfaces
         camera2View_rgb = (ImageView) findViewById(R.id.camera2_preview_rgb);
@@ -77,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the camera manager
         mCameraManager = new CameraManager(this, mTextureView);
+
+        // Lets by default launch into the settings view
+        Intent i = new Intent(this, SettingsActivity.class);
+        startActivityForResult(i, RESULT_SETTINGS);
 
     }
 
@@ -99,11 +98,10 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         // Stop background thread
         mCameraManager.stopBackgroundThread();
-        // Close our camera
-        // Note we will get permission errors if we try to reopen
+        // Close our camera, note we will get permission errors if we try to reopen
         // And we have not closed the current active camera
         mCameraManager.closeCamera();
-        // Call thej super
+        // Call the super
         super.onPause();
     }
 
@@ -125,38 +123,11 @@ public class MainActivity extends AppCompatActivity {
 
             Mat mYuvMat = ImageUtils.imageToMat(image);
 
-            /*
-            int imageWidth = image.getWidth();
-            int imageHeight = image.getHeight();
-
-            // Get the YUV planes, and combine them into a single data byte array
-            Image.Plane Y = image.getPlanes()[0];
-            Image.Plane U = image.getPlanes()[1];
-            Image.Plane V = image.getPlanes()[2];
-
-            int Yb = Y.getBuffer().remaining();
-            int Ub = U.getBuffer().remaining();
-            int Vb = V.getBuffer().remaining();
-
-            byte[] data = new byte[Yb + Ub + Vb];
-
-            Y.getBuffer().get(data, 0, Yb);
-            U.getBuffer().get(data, Yb, Ub);
-            V.getBuffer().get(data, Yb + Ub, Vb);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
-            yuvImage.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 50, out);
-            byte[] imageBytes = out.toByteArray();
-
-            Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-            MainActivity.camera2View.setImageBitmap(bmp);
-            */
-
+            // Convert from yuv
             Mat bgrMat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC4);
             Imgproc.cvtColor(mYuvMat, bgrMat, Imgproc.COLOR_YUV2BGR_I420);
 
-            // Convert to rgba
+            // Convert to rgba and gray
             Mat rgbaMatOut = new Mat();
             Imgproc.cvtColor(bgrMat, rgbaMatOut, Imgproc.COLOR_BGR2RGBA, 0);
             Mat grayFrame = new Mat();
@@ -183,10 +154,6 @@ public class MainActivity extends AppCompatActivity {
             Utils.matToBitmap(resizeimage2, bitmap);
             MainActivity.camera2View_rgb.setImageBitmap(bitmap);
 
-
-            //Utils.matToBitmap(grayFrame, bitmap);
-            //MainActivity.camera2View_gray.setImageBitmap(bitmap);
-
             // Make sure we close the image
             image.close();
         }
@@ -212,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
 
             Intent i = new Intent(this, SettingsActivity.class);
             startActivityForResult(i, RESULT_SETTINGS);
-
 
             return true;
         }

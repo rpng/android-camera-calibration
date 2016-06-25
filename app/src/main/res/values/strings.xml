@@ -1,11 +1,8 @@
 <resources>
 
-
-
+    <string name="app_name">RPNG Camera Calibration</string>
     <string name="action_settings">Settings</string>
 
-
-    <string name="app_name">OCV Camera Calibration</string>
 
     <string name="picture">Picture</string>
     <string name="description_info">Info</string>

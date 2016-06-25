@@ -1,27 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/pref_user_profile" >
-        <EditTextPreference
-            android:title="@string/pref_user_name"
-            android:summary="@string/pref_user_name_summary"
-            android:key="prefUsername"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/pref_update_setting" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="prefSendReport"
-            android:summary="@string/pref_send_report_summary"
-            android:title="@string/pref_send_report" >
-        </CheckBoxPreference>
+    <PreferenceCategory android:title="Camera Settings" >
+        <!--<EditTextPreference-->
+            <!--android:title="@string/pref_title_images"-->
+            <!--android:summary="@string/pref_user_name_summary"-->
+            <!--android:key="prefUsername"/>-->
 
         <ListPreference
-            android:key="prefSyncFrequency"
-            android:entries="@array/syncFrequency"
-            android:summary="@string/pref_sync_frequency_summary"
-            android:entryValues="@array/syncFrequencyValues"
-            android:title="@string/pref_sync_frequency" />
+            android:key="prefCamera"
+            android:title="Camera"
+            android:summary="Choose what camera to use"
+            android:entries="@array/camera"
+            android:entryValues="@array/cameraValues" />
+
+        <ListPreference
+            android:key="prefSizeRaw"
+            android:title="Raw Image Size"
+            android:summary="Set the incoming image size"
+            android:entries="@array/imageRaw"
+            android:entryValues="@array/imageRawValues" />
+
+        <ListPreference
+            android:key="prefSizeResize"
+            android:title="Re-sized Image"
+            android:summary="Set what the image should be resized to"
+            android:entries="@array/imageResize"
+            android:entryValues="@array/imageResizeValues" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="preGrayScaled"
+            android:title="Gray Scale"
+            android:summary="If the RGB image should be gray scaled" />
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Calibration Settings" >
+
+        <ListPreference
+            android:key="prefCalibSize"
+            android:title="Checkerboard Size"
+            android:summary="Set what grid size to look for"
+            android:entries="@array/calibSize"
+            android:entryValues="@array/calibSizeValues" />
+
+        <Preference
+            android:key="filePicker"
+            android:title="Export Folder"
+            android:summary="Pick where the calibration files should export to" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Finished" >
+
+        <Preference
+            android:key="exitlink"
+            android:title="Click Here to Exit"
+            android:summary="Start the calibration" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

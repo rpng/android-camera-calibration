@@ -2,6 +2,7 @@ package io.rpng.calibration.activities;
 
 
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
@@ -24,6 +25,18 @@ public class SettingsActivity extends PreferenceActivity
         {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
+
+
+            Preference button = (Preference)getPreferenceManager().findPreference("exitlink");
+            if (button != null) {
+                button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference arg0) {
+                        //this.finish();
+                        return true;
+                    }
+                });
+            }
         }
     }
 }
