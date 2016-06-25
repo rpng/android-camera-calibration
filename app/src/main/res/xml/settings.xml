@@ -9,17 +9,13 @@
 
         <ListPreference
             android:key="prefCamera"
-            android:title="Camera"
-            android:summary="Choose what camera to use"
-            android:entries="@array/camera"
-            android:entryValues="@array/cameraValues" />
+            android:title="Live Camera"
+            android:summary="Choose what camera to use" />
 
         <ListPreference
             android:key="prefSizeRaw"
             android:title="Raw Image Size"
-            android:summary="Set the incoming image size"
-            android:entries="@array/imageRaw"
-            android:entryValues="@array/imageRawValues" />
+            android:summary="Set the incoming image size" />
 
         <ListPreference
             android:key="prefSizeResize"
