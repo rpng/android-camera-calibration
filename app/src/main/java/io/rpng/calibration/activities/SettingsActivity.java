@@ -22,6 +22,7 @@ import android.util.Size;
 
 import io.rpng.calibration.R;
 import io.rpng.calibration.dialogs.ErrorDialog;
+import io.rpng.calibration.managers.PermissionManager;
 
 // Taken from => http://stackoverflow.com/a/13441715
 public class SettingsActivity extends PreferenceActivity
@@ -133,7 +134,7 @@ public class SettingsActivity extends PreferenceActivity
                 e.printStackTrace();
             } catch (NullPointerException e) {
                 // Currently an NPE is thrown when the Camera2API is used but not supported on the device this code runs.
-                ErrorDialog.newInstance(getString(R.string.camera_error)).show(getChildFragmentManager(), "dialog");
+                ErrorDialog.newInstance(getString(R.string.camera_error)).show(getActivity().getFragmentManager(), "dialog");
             }
 
 
@@ -145,6 +146,7 @@ public class SettingsActivity extends PreferenceActivity
             // Add the listener to the camera pref, so we can update the camera resolution field
             if(key.equals("prefCamera")) {
                 try {
+
                     // Get what camera we have selected
                     String cameraId = sharedPreferences.getString("prefCamera", "0");
 
@@ -179,7 +181,7 @@ public class SettingsActivity extends PreferenceActivity
                     e.printStackTrace();
                 } catch (NullPointerException e) {
                     // Currently an NPE is thrown when the Camera2API is used but not supported on the device this code runs.
-                    ErrorDialog.newInstance(getString(R.string.camera_error)).show(getChildFragmentManager(), "dialog");
+                    ErrorDialog.newInstance(getString(R.string.camera_error)).show(getActivity().getFragmentManager(), "dialog");
                 }
 
             }

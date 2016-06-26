@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -23,6 +25,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ public class CameraManager {
     private Activity activity;
     private PermissionManager permissionManager;
     private AutoFitTextureView mTextureView;
+    private ImageView camera2View;
 
     private ImageReader mImageReader;
     private CameraDevice mCameraDevice;
@@ -67,9 +71,10 @@ public class CameraManager {
      * Default constructor
      * Sets our activity, and texture view we should be updating
      */
-    public CameraManager(Activity act, AutoFitTextureView txt) {
+    public CameraManager(Activity act, AutoFitTextureView txt, ImageView camera2View) {
         this.activity = act;
         this.mTextureView = txt;
+        this.camera2View = camera2View;
         this.permissionManager = new PermissionManager(activity, VIDEO_PERMISSIONS);
     }
 
@@ -177,8 +182,12 @@ public class CameraManager {
             mImageReader = ImageReader.newInstance(widthRaw, heightRaw, ImageFormat.YUV_420_888, 3);
             mImageReader.setOnImageAvailableListener(MainActivity.imageAvailableListener, null);
 
-            //configureTransform(width, height);
-            //mMediaRecorder = new MediaRecorder();
+
+            // The orientation is a multiple of 90 value that rotates into the native orientation
+            // This should fix cameras that are rotated in landscape
+            camera2View.setRotation(mSensorOrientation);
+
+            // Finally actually open the camera
             manager.openCamera(cameraId, mStateCallback, null);
 
 
@@ -297,6 +306,5 @@ public class CameraManager {
             e.printStackTrace();
         }
     }
-
 
 }

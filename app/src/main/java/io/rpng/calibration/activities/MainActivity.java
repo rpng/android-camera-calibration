@@ -42,8 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static String TAG = "MainActivity";
     private static final int RESULT_SETTINGS = 1;
 
-    private static ImageView camera2View_rgb;
-    private static ImageView camera2View_gray;
+    private static ImageView camera2View;
     private CameraManager mCameraManager;
     private AutoFitTextureView mTextureView;
 
@@ -68,12 +67,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Get our surfaces
-        camera2View_rgb = (ImageView) findViewById(R.id.camera2_preview_rgb);
+        camera2View = (ImageView) findViewById(R.id.camera2_preview);
         //camera2View_gray = (ImageView) findViewById(R.id.camera2_preview_gray);
         mTextureView = (AutoFitTextureView) findViewById(R.id.camera2_texture);
 
         // Create the camera manager
-        mCameraManager = new CameraManager(this, mTextureView);
+        mCameraManager = new CameraManager(this, mTextureView, camera2View);
 
         // Set our shared preferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -176,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
             // Update image
             final Bitmap bitmap = Bitmap.createBitmap(mat_out.cols(), mat_out.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(mat_out, bitmap);
-            MainActivity.camera2View_rgb.setImageBitmap(bitmap);
+            MainActivity.camera2View.setImageBitmap(bitmap);
 
             // Make sure we close the image
             image.close();
@@ -215,20 +214,9 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
+
+            // Call back from end of settings activity
             case RESULT_SETTINGS:
-                SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-                StringBuilder builder = new StringBuilder();
-
-                builder.append("\n\n\n Username: " + sharedPrefs.getString("prefUsername", "NULL"));
-
-                builder.append("\n Send report:" + sharedPrefs.getBoolean("prefSendReport", false));
-
-                builder.append("\n Sync Frequency: " + sharedPrefs.getString("prefSyncFrequency", "NULL"));
-
-                TextView settingsTextView = (TextView) findViewById(R.id.textUserSettings);
-
-                settingsTextView.setText(builder.toString());
                 break;
 
         }

@@ -22,17 +22,19 @@
         <!-- Main activity that handles everything -->
         <activity
             android:name=".activities.MainActivity"
+            android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <!-- Our settings activity -->
-        <activity android:name=".activities.SettingsActivity" />
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:screenOrientation="portrait"/>
 
 
     </application>
