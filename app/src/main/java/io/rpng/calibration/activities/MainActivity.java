@@ -44,13 +44,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "MainActivity";
     private static final int RESULT_SETTINGS = 1;
+    private static final int RESULT_RESULT = 2;
+
+    private static Intent intentSettings;
+    private static Intent intentResults;
 
     private static ImageView camera2View;
     private static TextView camera2Captured;
     private AutoFitTextureView mTextureView;
 
     private CameraManager mCameraManager;
-    private static CameraCalibrator mCameraCalibrator;
+    public static CameraCalibrator mCameraCalibrator;
 
     private static SharedPreferences sharedPreferences;
 
@@ -78,8 +82,10 @@ public class MainActivity extends AppCompatActivity {
         // Get our surfaces
         camera2View = (ImageView) findViewById(R.id.camera2_preview);
         camera2Captured = (TextView) findViewById(R.id.camera2_captures);
-        //camera2View_gray = (ImageView) findViewById(R.id.camera2_preview_gray);
         mTextureView = (AutoFitTextureView) findViewById(R.id.camera2_texture);
+
+        // Update the textview with starting values
+        camera2Captured.setText("Capture Success: 0\nCapture Tries: 0");
 
         // Create the camera manager
         mCameraManager = new CameraManager(this, mTextureView, camera2View);
@@ -88,9 +94,14 @@ public class MainActivity extends AppCompatActivity {
         // Set our shared preferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        // Build the result activities for later
+        intentSettings = new Intent(this, SettingsActivity.class);
+        intentResults = new Intent(this, ResultsActivity.class);
+
         // Lets by default launch into the settings view
-        Intent i = new Intent(this, SettingsActivity.class);
-        startActivityForResult(i, RESULT_SETTINGS);
+        startActivityForResult(intentSettings, RESULT_SETTINGS);
+
+
 
     }
 
@@ -102,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         button_done.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCameraCalibrator.calibrate();
+                startActivityForResult(intentResults, RESULT_RESULT);
             }
         });
 
@@ -169,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
             // See if we should gray scale
             if(sharedPreferences.getBoolean("preGrayScaled", true)) {
                 Imgproc.cvtColor(mYuvMat, mat_out_gray, Imgproc.COLOR_YUV2GRAY_I420);
-                Imgproc.cvtColor(mat_out_gray, mat_out_rgb, Imgproc.COLOR_YUV2RGB_I420);
+                Imgproc.cvtColor(mat_out_gray, mat_out_rgb, Imgproc.COLOR_GRAY2RGB);
             } else {
                 Imgproc.cvtColor(mYuvMat, mat_out_gray, Imgproc.COLOR_YUV2GRAY_I420);
                 Imgproc.cvtColor(mYuvMat, mat_out_rgb, Imgproc.COLOR_YUV2RGB_I420);
@@ -243,6 +254,20 @@ public class MainActivity extends AppCompatActivity {
 
                 // The settings have changed, so reset the calibrator
                 mCameraCalibrator.clearCorners();
+
+                // Update the textview with starting values
+                camera2Captured.setText("Capture Success: 0\nCapture Tries: 0");
+
+                break;
+
+            // Call back from end of settings activity
+            case RESULT_RESULT:
+
+                // The settings have changed, so reset the calibrator
+                mCameraCalibrator.clearCorners();
+
+                // Update the textview with starting values
+                camera2Captured.setText("Capture Success: 0\nCapture Tries: 0");
 
                 break;
 

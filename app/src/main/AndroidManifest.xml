@@ -36,6 +36,11 @@
             android:name=".activities.SettingsActivity"
             android:screenOrientation="portrait"/>
 
+        <!-- Our result activity -->
+        <activity
+            android:name=".activities.ResultsActivity"
+            android:screenOrientation="portrait"/>
+
 
     </application>
 

@@ -88,9 +88,15 @@ public class CameraCalibrator {
         Log.i(TAG, "Distortion coefficients: " + mDistortionCoefficients.dump());
     }
 
+    /**
+     * Reset all the variables
+     */
     public void clearCorners() {
         captureTries = 0;
         mCornersBuffer.clear();
+        mIsCalibrated = false;
+        Mat.eye(3, 3, CvType.CV_64FC1).copyTo(mCameraMatrix);
+        mCameraMatrix.put(0, 0, 1.0);
     }
 
     private void calcBoardCornerPositions(Mat corners) {
@@ -139,6 +145,7 @@ public class CameraCalibrator {
     private void findPattern(Mat grayFrame) {
         Size mPatternSize = this.getPatternSize();
         mPatternWasFound = Calib3d.findCirclesGrid(grayFrame, mPatternSize, mCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
+        //mPatternWasFound = Calib3d.findChessboardCorners(grayFrame, mPatternSize, mCorners, Calib3d.CALIB_CB_FAST_CHECK);
     }
 
     public void addCorners() {

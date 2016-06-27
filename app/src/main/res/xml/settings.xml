@@ -43,10 +43,10 @@
             android:entries="@array/calibSize"
             android:entryValues="@array/calibSizeValues" />
 
-        <Preference
-            android:key="filePicker"
-            android:title="Export Folder"
-            android:summary="Pick where the calibration files should export to" />
+        <!--<Preference-->
+            <!--android:key="filePicker"-->
+            <!--android:title="Export Folder"-->
+            <!--android:summary="Pick where the calibration files should export to" />-->
 
     </PreferenceCategory>
 
