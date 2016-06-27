@@ -18,7 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.TextureView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,6 +33,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import io.rpng.calibration.managers.CameraCalibrator;
 import io.rpng.calibration.managers.CameraManager;
 import io.rpng.calibration.R;
 import io.rpng.calibration.utils.ImageUtils;
@@ -43,8 +46,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int RESULT_SETTINGS = 1;
 
     private static ImageView camera2View;
-    private CameraManager mCameraManager;
+    private static TextView camera2Captured;
     private AutoFitTextureView mTextureView;
+
+    private CameraManager mCameraManager;
+    private static CameraCalibrator mCameraCalibrator;
 
     private static SharedPreferences sharedPreferences;
 
@@ -66,13 +72,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Add our listeners
+        this.addButtonListeners();
+
         // Get our surfaces
         camera2View = (ImageView) findViewById(R.id.camera2_preview);
+        camera2Captured = (TextView) findViewById(R.id.camera2_captures);
         //camera2View_gray = (ImageView) findViewById(R.id.camera2_preview_gray);
         mTextureView = (AutoFitTextureView) findViewById(R.id.camera2_texture);
 
         // Create the camera manager
         mCameraManager = new CameraManager(this, mTextureView, camera2View);
+        mCameraCalibrator = new CameraCalibrator(this);
 
         // Set our shared preferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -81,6 +92,32 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this, SettingsActivity.class);
         startActivityForResult(i, RESULT_SETTINGS);
 
+    }
+
+    private void addButtonListeners() {
+
+        // When the done button is pressed, we want to calibrate
+        // This should start the calibration activity, and then start the calibration
+        Button button_done = (Button) findViewById(R.id.button_done);
+        button_done.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraCalibrator.calibrate();
+            }
+        });
+
+        // We we want to "capture" the current grid, we should record the current corners
+        Button button_record = (Button) findViewById(R.id.button_record);
+        button_record.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Add the corners
+                mCameraCalibrator.addCorners();
+                // Update the text view
+                camera2Captured.setText("Capture Success: " + mCameraCalibrator.getCornersBufferSize()
+                        + "\nCapture Tries: " + mCameraCalibrator.getCaptureTries());
+            }
+        });
     }
 
     @Override
@@ -126,23 +163,17 @@ public class MainActivity extends AppCompatActivity {
 
             // Convert from yuv to correct format
             Mat mYuvMat = ImageUtils.imageToMat(image);
-            Mat mat_out = new Mat();
+            Mat mat_out_gray = new Mat();
+            Mat mat_out_rgb = new Mat();
 
             // See if we should gray scale
             if(sharedPreferences.getBoolean("preGrayScaled", true)) {
-                Imgproc.cvtColor(mYuvMat, mat_out, Imgproc.COLOR_YUV2GRAY_I420);
+                Imgproc.cvtColor(mYuvMat, mat_out_gray, Imgproc.COLOR_YUV2GRAY_I420);
+                Imgproc.cvtColor(mat_out_gray, mat_out_rgb, Imgproc.COLOR_YUV2RGB_I420);
             } else {
-                Imgproc.cvtColor(mYuvMat, mat_out, Imgproc.COLOR_YUV2RGB_I420);
+                Imgproc.cvtColor(mYuvMat, mat_out_gray, Imgproc.COLOR_YUV2GRAY_I420);
+                Imgproc.cvtColor(mYuvMat, mat_out_rgb, Imgproc.COLOR_YUV2RGB_I420);
             }
-
-            // Get the size of the checkered board we are looking for
-            String prefCalibSize = sharedPreferences.getString("prefCalibSize", "4x5");
-            int widthCalib = Integer.parseInt(prefCalibSize.substring(0,prefCalibSize.lastIndexOf("x")));
-            int heightCalib = Integer.parseInt(prefCalibSize.substring(prefCalibSize.lastIndexOf("x")+1));
-
-            // Testing calibration methods
-            Size mPatternSize = new Size(widthCalib,heightCalib);
-            MatOfPoint2f mCorners = new MatOfPoint2f();
 
             // Get image size from prefs
             String prefSizeResize = sharedPreferences.getString("prefSizeResize", "0x0");
@@ -153,23 +184,20 @@ public class MainActivity extends AppCompatActivity {
             if(width != 0 && height != 0) {
 
                 // Create matrix for the resized image
-                Mat resizeimage = new Mat();
                 Size sz = new Size(width, height);
 
                 // Resize the images
-                Imgproc.resize(mat_out, resizeimage, sz);
-                mat_out = resizeimage;
+                Imgproc.resize(mat_out_gray, mat_out_gray, sz);
+                Imgproc.resize(mat_out_rgb, mat_out_rgb, sz);
             }
 
-            // Extract the points, and display them
-            boolean mPatternWasFound = Calib3d.findChessboardCorners(mat_out, mPatternSize, mCorners, Calib3d.CALIB_CB_FAST_CHECK);
 
-            // If a pattern was found, draw it
-            Calib3d.drawChessboardCorners(mat_out, mPatternSize, mCorners, mPatternWasFound);
+            // Send the images to the image calibrator
+            mCameraCalibrator.processFrame(mat_out_gray, mat_out_rgb);
 
             // Update image
-            final Bitmap bitmap = Bitmap.createBitmap(mat_out.cols(), mat_out.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(mat_out, bitmap);
+            final Bitmap bitmap = Bitmap.createBitmap(mat_out_rgb.cols(), mat_out_rgb.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mat_out_rgb, bitmap);
             MainActivity.camera2View.setImageBitmap(bitmap);
 
             // Make sure we close the image
@@ -212,6 +240,10 @@ public class MainActivity extends AppCompatActivity {
 
             // Call back from end of settings activity
             case RESULT_SETTINGS:
+
+                // The settings have changed, so reset the calibrator
+                mCameraCalibrator.clearCorners();
+
                 break;
 
         }
