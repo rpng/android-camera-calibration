@@ -31,6 +31,11 @@
             android:summary="If the RGB image should be gray scaled" />
 
         <ListPreference
+            android:key="prefFocusLength"
+            android:title="Focus Lengths"
+            android:summary="Set what focus length should be used (mm)" />
+
+        <ListPreference
             android:defaultValue="4x5"
             android:key="prefCalibSize"
             android:title="Checkerboard Size"

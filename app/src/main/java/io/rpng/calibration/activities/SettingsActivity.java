@@ -20,6 +20,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
 
+import java.util.Arrays;
+
 import io.rpng.calibration.R;
 import io.rpng.calibration.dialogs.ErrorDialog;
 import io.rpng.calibration.managers.PermissionManager;
@@ -70,6 +72,7 @@ public class SettingsActivity extends PreferenceActivity
             // Get our camera id list preference
             ListPreference cameraList = (ListPreference)getPreferenceManager().findPreference("prefCamera");
             ListPreference cameraRez = (ListPreference)getPreferenceManager().findPreference("prefSizeRaw");
+            ListPreference cameraFocus = (ListPreference)getPreferenceManager().findPreference("prefFocusLength");
 
             try {
                 // Load our camera settings
@@ -130,6 +133,20 @@ public class SettingsActivity extends PreferenceActivity
                 cameraRez.setEntryValues(rezValues);
                 cameraRez.setDefaultValue(rezValues[0]);
 
+                // Get the possible focus lengths, on non-optical devices this only has one value
+                // https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#LENS_INFO_AVAILABLE_FOCAL_LENGTHS
+                float[] focus_lengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+                CharSequence[] focuses = new CharSequence[focus_lengths.length];
+                for(int i=0; i<focus_lengths.length; i++) {
+                    focuses[i]  = focus_lengths[i] + "";
+                }
+
+                cameraFocus.setEntries(focuses);
+                cameraFocus.setEntryValues(focuses);
+                cameraFocus.setDefaultValue(focuses[0]);
+                cameraFocus.setValueIndex(0);
+
+
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             } catch (NullPointerException e) {
@@ -176,6 +193,21 @@ public class SettingsActivity extends PreferenceActivity
                     cameraRez.setEntryValues(rezValues);
                     cameraRez.setDefaultValue(rezValues[0]);
                     cameraRez.setValueIndex(0);
+
+                    // Get the possible focus lengths, on non-optical devices this only has one value
+                    // https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#LENS_INFO_AVAILABLE_FOCAL_LENGTHS
+                    float[] focus_lengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+                    CharSequence[] focuses = new CharSequence[focus_lengths.length];
+                    for(int i=0; i<focus_lengths.length; i++) {
+                        focuses[i]  = focus_lengths[i] + "";
+                    }
+
+                    ListPreference cameraFocus = (ListPreference)getPreferenceManager().findPreference("prefFocusLength");
+                    cameraFocus.setEntries(focuses);
+                    cameraFocus.setEntryValues(focuses);
+                    cameraFocus.setDefaultValue(focuses[0]);
+                    cameraFocus.setValueIndex(0);
+
 
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
