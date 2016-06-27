@@ -30,11 +30,6 @@
             android:title="Gray Scale"
             android:summary="If the RGB image should be gray scaled" />
 
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Calibration Settings" >
-
         <ListPreference
             android:defaultValue="4x5"
             android:key="prefCalibSize"
