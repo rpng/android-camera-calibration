@@ -116,14 +116,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onImageAvailable(ImageReader ir) {
 
-            // Get shared prefs
-
-
             // Contrary to what is written in Aptina presentation acquireLatestImage is not working as described
             // Google: Also, not working as described in android docs (should work the same as acquireNextImage in
             // our case, but it is not)
             // Image im = ir.acquireLatestImage();
-
 
             // Get the next image from the queue
             Image image = ir.acquireNextImage();
@@ -164,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                 Imgproc.resize(mat_out, resizeimage, sz);
                 mat_out = resizeimage;
             }
-
 
             // Extract the points, and display them
             boolean mPatternWasFound = Calib3d.findChessboardCorners(mat_out, mPatternSize, mCorners, Calib3d.CALIB_CB_FAST_CHECK);
