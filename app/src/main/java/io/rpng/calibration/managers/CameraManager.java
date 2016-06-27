@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.rpng.calibration.R;
@@ -65,6 +66,9 @@ public class CameraManager {
 
     private CaptureRequest.Builder mPreviewBuilder;
     private CameraCaptureSession mPreviewSession;
+
+    private float[] intrinsic = new float[5];
+    private float[] distortion = new float[4];
 
 
     /**
@@ -166,6 +170,14 @@ public class CameraManager {
             mVideoSize = CameraUtil.chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
             mPreviewSize = CameraUtil.chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), width, height, mVideoSize);
 
+            // If we can get the intrinsics, great!
+            // https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html#LENS_INTRINSIC_CALIBRATION
+            // https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html#LENS_RADIAL_DISTORTION
+            if(android.os.Build.VERSION.SDK_INT >= 23) {
+                intrinsic = characteristics.get(CameraCharacteristics.LENS_INTRINSIC_CALIBRATION);
+                distortion = characteristics.get(CameraCharacteristics.LENS_RADIAL_DISTORTION);
+            }
+
             int orientation = activity.getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 mTextureView.setAspectRatio(mPreviewSize.getWidth(), mPreviewSize.getHeight());
@@ -222,6 +234,8 @@ public class CameraManager {
             mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             mPreviewBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_AUTO);
             mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+
+            // Get the focal length
             mPreviewBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, 5.0f);
 
 
@@ -310,6 +324,18 @@ public class CameraManager {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public float[] getIntrinsic() {
+        if(intrinsic != null)
+            return intrinsic;
+        return new float[5];
+    }
+
+    public float[] getDistortion() {
+        if(distortion != null)
+            return distortion;
+        return new float[4];
     }
 
 }

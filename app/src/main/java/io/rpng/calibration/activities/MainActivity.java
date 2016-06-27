@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private static TextView camera2Captured;
     private AutoFitTextureView mTextureView;
 
-    private CameraManager mCameraManager;
+    public static CameraManager mCameraManager;
     public static CameraCalibrator mCameraCalibrator;
 
     private static SharedPreferences sharedPreferences;
