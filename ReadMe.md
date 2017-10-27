@@ -28,6 +28,14 @@ Inside this folder, we can see that the build.gradle is telling the system to bu
 For the actual program there are 3 activities. The main on has the camera view. On launch this one is created, and instantly launches the settings activity. This is a `PreferenceActivity` hands off the view and settings loading to the android api. This is really nice since after each setting is edited the "shared preference" for this application gets updated. The actual main activity has the camera render, and the capture/done buttons. To save the extracted grid, the capture button can be used. After enough has been captured, the done button can be pressed. This launches the results activity which starts an async thread, which displays a proccessing dialog, and then the calculated results.
 
 
+## Calibration Grid
+
+The [default](app/src/main/java/io/rpng/calibration/managers/CameraCalibrator.java#L145-L149) grid is a cirlce grid.
+An example that can be printed out on a sheet of 8.5"x11" paper can be seen below.
+This grid would be classified as either a *11x8* or *8x11* grid pattern.
+![screenshot](./images/circle_grid.png)
+
+
 ## Screenshots
 
 ![screenshot](./images/Screenshot_20160627-125906.png)
