@@ -1,26 +1,50 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
 
-model {
-    android {
-        compileSdkVersion 23
-        buildToolsVersion "25.0.0"
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "io.rpng.calibration"
 
-        defaultConfig {
-            applicationId "io.rpng.calibration"
-            minSdkVersion.apiLevel 21
-            targetSdkVersion.apiLevel 23
-            versionCode 1
-            versionName "1.0"
-        }
-        buildTypes {
-            release {
-                minifyEnabled false
-                proguardFiles.add(file('proguard-rules.pro'))
-            }
+        // AR Optional apps must declare minSdkVersion >= 14.
+        // AR Required apps must declare minSdkVersion >= 24.
+        minSdkVersion 24
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            /*
+             * Sceneform is available for the following ABIs:
+             * 'arm64-v8a', 'armeabi-v7a', 'x86_64' and 'x86'.
+             * Your application should include the ABIs most appropriate to
+             * minimize APK size. Listing 'arm64-v8a' is recommended.
+             *
+             * This sample app includes two ABIs:
+             * 1. 'arm64-v8a' to run on devices
+             * 2. 'x86' to run in the Android emulator
+             */
+            abiFilters 'arm64-v8a', 'x86'
         }
     }
+    // Sceneform libraries use language constructs from Java 8.
+    // Add these compile options if targeting minSdkVersion < 26.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
 }
+
+
 
 dependencies {
     // Include the libs dir (right now we don't have any java libs)
@@ -30,13 +54,17 @@ dependencies {
     //testCompile 'junit:junit:4.12'
 
     // Include opencv libraries
-    compile project(':opencv_310')
+    //implementation project(':opencv_310')
+    // opencv 3.4.4 with contribution packages
+    implementation 'com.quickbirdstudios:opencv:3.4.4-contrib'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.koushikdutta.async:androidasync:2.+'
 
     // Include android deps
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:design:23.4.0'
-    compile 'com.android.support:support-v4:23.3.0'
-    compile 'com.android.support:support-v13:23.3.0'
+    implementation "com.android.support:appcompat-v7:27.1.1"
+    implementation 'com.android.support:design:27.1.1'
+    //implementation 'com.android.support:support-v4:23.3.0'
+    implementation 'com.android.support:support-v13:27.1.1'
 
 }
 
